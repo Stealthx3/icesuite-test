@@ -1,0 +1,23 @@
+{
+  "slug": "icebreaker",
+  "name": "IceBreaker",
+  "summary": "Browse and play your RomM game library with a controller",
+  "description": "IceBreaker connects to your RomM server and turns your game collection into a controller-first launcher: it downloads games, starts the right emulator and keeps your saves in sync with RomM. Game launcher for RomM, a port of Argosy for desktop: based on Argosy by the RomM team. IceBreaker is an independent port and is not affiliated with or endorsed by rommapp.",
+  "license": "GPL-3.0-only",
+  "icon": "icons/icebreaker.svg",
+  "homepage": "https://github.com/Stealthx3/argosy-desktop",
+  "issues": "https://github.com/Stealthx3/argosy-desktop/issues",
+  "docs": "https://github.com/Stealthx3/argosy-desktop#install",
+  "categories": ["Game"],
+  "formats": {
+    "flatpak": {
+      "app_id": "io.github.stealthx3.IceBreaker",
+      "needs_flathub": true
+    }
+  },
+  "notes": [
+    "Based on <a href=\"https://github.com/rommapp/argosy-launcher\">Argosy</a> by the RomM team; an independent port, not affiliated with rommapp.",
+    "Needs a RomM server. Emulators run from your system or from Flathub; IceBreaker can install the ones you need.",
+    "Formerly Argosy Desktop: testers of <code>io.github.stealthx3.ArgosyDesktop</code> are moved to IceBreaker by <code>flatpak update</code>."
+  ]
+}
