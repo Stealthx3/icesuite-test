@@ -33,7 +33,9 @@ cat > "$T/catalog/hello.json" <<'EOF'
 {"slug": "hello", "name": "Hello Test", "summary": "End-to-end test app", "homepage": "https://example.invalid/hello",
  "license": "MIT", "icon": "icons/icefin-player.svg",
  "formats": {"flatpak": {"app_id": "io.example.Hello", "needs_flathub": false}, "deb": {"package": "hello-test"},
-             "android": {"package": "io.example.hello"}, "windows": {}},
+             "android": {"package": "io.example.hello"}, "windows": {},
+             "jellyfin": {"guid": "11111111-2222-4333-8444-555555555555", "category": "Channels", "target_abi": "198.51.100.152",
+                          "image": "icons/icetube-plugin.png", "owner": "Stealthx3"}},
  "notes": ["A <b>note</b> from the catalog."]}
 EOF
 ice() { python3 "$here/tools/icesuite.py" --config "$T/config.json" --site "$SITE" "$@"; }
@@ -122,9 +124,46 @@ ice publish-windows --app hello --version "1.0.0+abc1234" --commit abc1234 --dry
 python3 -c "import json; f=json.load(open('$SITE/windows/hello.json'))['files'][0]; assert f['url'].endswith('/hello-v1.0.0-abc1234/Hello-Setup.exe'), f" \
   && pass "feed points at the release asset"
 
+echo "Jellyfin"
+head -c 4096 /dev/urandom > "$T/hello.zip"
+head -c 1024 /dev/urandom > "$T/hello-helper.tar.gz"
+echo dummy > "$T/SHA256SUMS"
+jf() { ice publish-jellyfin --app hello --dry-run "$@" 2>>"$T/log-jf"; }
+jf --channel alpha --version 0.1.0-alpha.1 --commit abc1234 --notes "first alpha" "$T/hello.zip" "$T/hello-helper.tar.gz" "$T/SHA256SUMS" || fail "publish-jellyfin alpha.1"
+jf --channel alpha --version 0.1.0-alpha.2 --commit abc1234 --notes "second alpha" "$T/hello.zip" || fail "publish-jellyfin alpha.2"
+jf --channel beta --version 0.1.0-beta.1 --commit abc1234 --notes "first beta" "$T/hello.zip" || fail "publish-jellyfin beta.1"
+python3 - "$SITE" "$T/hello.zip" <<'EOF2' && pass "manifests: four-part versions, MD5, image URL, newest first" || fail "jellyfin manifest"
+import hashlib, json, sys
+site, zp = sys.argv[1], sys.argv[2]
+md5 = hashlib.md5(open(zp, "rb").read()).hexdigest()
+for ch, want in (("alpha", ["0.1.0.2", "0.1.0.1"]), ("beta", ["0.1.0.101"])):
+    m = json.load(open(f"{site}/jellyfin/{ch}/manifest.json"))
+    assert isinstance(m, list) and len(m) == 1, m
+    p = m[0]
+    assert p["guid"] == "11111111-2222-4333-8444-555555555555" and p["name"] == "Hello Test", p
+    assert p["imageUrl"] == f"file://{site}/jellyfin/images/hello.png", p["imageUrl"]
+    assert [v["version"] for v in p["versions"]] == want, p["versions"]
+    for v in p["versions"]:
+        assert v["checksum"] == md5 and v["targetAbi"] == "198.51.100.152", v
+        assert "/releases/download/hello-v0.1.0-" in v["sourceUrl"] and v["sourceUrl"].endswith("/hello.zip"), v
+        assert v["timestamp"].endswith("Z") and v["changelog"], v
+assert open(f"{site}/jellyfin/images/hello.png", "rb").read(4) == b"\x89PNG"
+EOF2
+python3 -c "import json; b=json.load(open('$SITE/meta/builds.json'))['hello']; assert b['jellyfin-alpha']['plugin_version']=='0.1.0.2' and b['jellyfin-beta']['plugin_version']=='0.1.0.101', b; assert [f['name'] for f in b['jellyfin-alpha']['files']]==['hello.zip'] and len(b['jellyfin-alpha']['files'][0]['sha256'])==64" \
+  && pass "build recorded for each channel"
+for v in 3 4; do jf --channel alpha --version 0.1.0-alpha.$v --notes "alpha $v" "$T/hello.zip" || fail "publish-jellyfin alpha.$v"; done
+python3 -c "import json; v=[x['version'] for x in json.load(open('$SITE/jellyfin/alpha/manifest.json'))[0]['versions']]; assert v==['0.1.0.4','0.1.0.3','0.1.0.2'], v" \
+  && pass "manifest keeps the newest 3 versions"
+if jf --channel alpha --version 0.1.0-beta.2 "$T/hello.zip"; then fail "channel mismatch accepted"; else pass "version/channel mismatch rejected"; fi
+if jf --channel beta --version 0.1.0 "$T/hello.zip"; then fail "stable version accepted"; else pass "non-pre-release version rejected"; fi
+if jf --channel alpha --version 0.1.0-alpha.100 "$T/hello.zip"; then fail "alpha.100 accepted"; else pass "N above 99 rejected"; fi
+if jf --channel alpha --version 0.1.0-alpha.5 "$T/hello.zip" "$T/hello.zip"; then fail "two zips accepted"; else pass "exactly one zip required"; fi
+python3 -c "import json; v=[x['version'] for x in json.load(open('$SITE/jellyfin/alpha/manifest.json'))[0]['versions']]; assert v[0]=='0.1.0.4', v" \
+  && pass "rejected publishes leave the manifest alone"
+
 echo "Page"
 H=$SITE/index.html
-for s in 'id="hello"' 'Flatpak (Linux)' 'Debian / Ubuntu (.deb)' 'Windows <span' 'id="setup-flatpak"' 'id="setup-apt"' 'A <b>note</b>'; do
+for s in 'id="hello"' 'Flatpak (Linux)' 'Debian / Ubuntu (.deb)' 'Windows <span' 'id="setup-flatpak"' 'id="setup-apt"' 'id="setup-jellyfin"' 'jellyfin/alpha/manifest.json' 'jellyfin/beta/manifest.json' 'Dashboard → Plugins → Repositories' 'A <b>note</b>'; do
   grep -qF "$s" "$H" || fail "index.html lacks $s"
 done
 grep -qF 'id="setup-android"' "$H" || ! command -v aapt >/dev/null || fail "index.html lacks Android setup"
