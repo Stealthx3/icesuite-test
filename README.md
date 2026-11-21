@@ -2,7 +2,7 @@
 
 **Install page: <https://stealthx3.github.io/icesuite-test/>**
 
-One repository that serves alpha and test builds of every Icesuite app, in four formats:
+One repository that serves alpha and test builds of every Icesuite app, in five formats:
 
 | Format | How users get it | Updates | Where it lives |
 |---|---|---|---|
@@ -10,6 +10,7 @@ One repository that serves alpha and test builds of every Icesuite app, in four 
 | Debian / Ubuntu `.deb` | an APT source, once | `apt upgrade` | `apt/` on Pages (signed APT repo) |
 | Android `.apk` | an F-Droid repository, once (F-Droid, Droid-ify, Neo Store) | the store app | `fdroid/repo/` on Pages (signed F-Droid index) |
 | Windows `.exe` / `.msi` | download from the install page | reinstall | GitHub pre-releases on this repository, plus `windows/<app>.json` on Pages |
+| Jellyfin plugin | add a plugin repository in Jellyfin once (alpha or beta) | the Jellyfin dashboard | `jellyfin/<channel>/manifest.json` on Pages, plus GitHub pre-releases on this repository |
 
 Users only ever add a repository once per platform. A new Icesuite app shows up in the same remotes.
 
@@ -29,7 +30,7 @@ config.json            site URL, repository names, signing key fingerprint, rete
 catalog/<app>.json     one file per Icesuite app: name, links, package IDs per format
 icons/                 app icons used on the page and in .flatpakref files
 keys/icesuite-test.gpg the public OpenPGP key (Flatpak + APT)
-tools/icesuite.py      the publisher: sync, publish-flatpak/deb/apk/windows, push
+tools/icesuite.py      the publisher: sync, publish-flatpak/deb/apk/windows/jellyfin, push
 tools/test-e2e.sh      end-to-end test with throwaway keys (also run by CI)
 docs/                  publishing guide, adding an app, migration, decision log
 ```
@@ -42,6 +43,7 @@ tools/icesuite.py publish-flatpak --app icefin-player --src-repo ~/fp-repo --ver
 tools/icesuite.py publish-deb     --app icefin-player --commit abc1234 icefin-player_0.1.0~alpha3_amd64.deb
 tools/icesuite.py publish-apk     --app some-app --commit abc1234 app-release.apk
 tools/icesuite.py publish-windows --app some-app --version 0.1.0-alpha.3 --commit abc1234 SomeApp-Setup.exe
+tools/icesuite.py publish-jellyfin --app icetube --channel alpha --version 0.1.0-alpha.1 --commit abc1234 icetube_0.1.0.1.zip SHA256SUMS
 tools/icesuite.py push
 ```
 Full guide: [docs/PUBLISHING.md](docs/PUBLISHING.md). New app: [docs/ADDING-AN-APP.md](docs/ADDING-AN-APP.md).
@@ -50,6 +52,7 @@ Full guide: [docs/PUBLISHING.md](docs/PUBLISHING.md). New app: [docs/ADDING-AN-A
 | App | Source | Formats in the catalog |
 |---|---|---|
 | Icefin Player | [Stealthx3/icefin-player](https://github.com/Stealthx3/icefin-player) | Flatpak, .deb |
+| IceTube | [Stealthx3/icetube](https://github.com/Stealthx3/icetube) (private for now; releases carry a source tarball) | Jellyfin plugin |
 
 ## History
 This repository started as `icefin-flatpak-test`, a Flatpak-only remote for Icefin Player. The move to a multi-app,
