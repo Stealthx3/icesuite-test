@@ -11,7 +11,7 @@
     "jellyfin": {
       "guid": "e90a41f1-a024-4d75-a12e-e9ba0069c109",
       "category": "Channels",
-      "target_abi": "198.51.100.152",
+      "target_abi": "12.0.0.0",
       "image": "icons/icetube-plugin.png",
       "owner": "Stealthx3"
     }

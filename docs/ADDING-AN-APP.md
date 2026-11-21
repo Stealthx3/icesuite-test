@@ -27,7 +27,7 @@
     "jellyfin": {
       "guid": "00000000-0000-4000-8000-000000000000",
       "category": "Channels",
-      "target_abi": "198.51.100.152",
+      "target_abi": "12.0.0.0",
       "image": "icons/example-app-plugin.png",
       "owner": "Stealthx3"
     }

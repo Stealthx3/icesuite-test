@@ -99,7 +99,7 @@ Repositories.
   the same `X.Y.Z` and the next `X.Y.Z` outranks both.
 - **Retention.** The newest `jellyfin.keep_versions` (3) versions per app and channel stay in the manifest; the
   older pre-releases are deleted with their tags.
-- **Target ABI.** `--target-abi`, default `formats.jellyfin.target_abi` from the catalog (`198.51.100.152`).
+- **Target ABI.** `--target-abi`, default `formats.jellyfin.target_abi` from the catalog (`12.0.0.0`).
 - **Plugin image.** `formats.jellyfin.image` is copied to `jellyfin/images/<app>.png` and linked as `imageUrl`.
 - **From CI.** The app's own repository runs this from its release workflow: it checks out `main` here with a
   fine-grained token limited to this repository (Contents: read and write), then runs `sync`,

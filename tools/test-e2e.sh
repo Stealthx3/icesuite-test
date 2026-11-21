@@ -34,7 +34,7 @@ cat > "$T/catalog/hello.json" <<'EOF'
  "license": "MIT", "icon": "icons/icefin-player.svg",
  "formats": {"flatpak": {"app_id": "io.example.Hello", "needs_flathub": false}, "deb": {"package": "hello-test"},
              "android": {"package": "io.example.hello"}, "windows": {},
-             "jellyfin": {"guid": "11111111-2222-4333-8444-555555555555", "category": "Channels", "target_abi": "198.51.100.152",
+             "jellyfin": {"guid": "11111111-2222-4333-8444-555555555555", "category": "Channels", "target_abi": "12.0.0.0",
                           "image": "icons/icetube-plugin.png", "owner": "Stealthx3"}},
  "notes": ["A <b>note</b> from the catalog."]}
 EOF
@@ -144,7 +144,7 @@ for ch, want in (("alpha", ["0.1.0.2", "0.1.0.1"]), ("beta", ["0.1.0.101"])):
     assert p["imageUrl"] == f"file://{site}/jellyfin/images/hello.png", p["imageUrl"]
     assert [v["version"] for v in p["versions"]] == want, p["versions"]
     for v in p["versions"]:
-        assert v["checksum"] == md5 and v["targetAbi"] == "198.51.100.152", v
+        assert v["checksum"] == md5 and v["targetAbi"] == "12.0.0.0", v
         assert "/releases/download/hello-v0.1.0-" in v["sourceUrl"] and v["sourceUrl"].endswith("/hello.zip"), v
         assert v["timestamp"].endswith("Z") and v["changelog"], v
 assert open(f"{site}/jellyfin/images/hello.png", "rb").read(4) == b"\x89PNG"
