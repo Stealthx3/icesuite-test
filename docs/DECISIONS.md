@@ -1,6 +1,6 @@
 # Decision and action log
 
-Newest first. **User** = Micaiah's call; **Claude** = proposed by Claude, open to change.
+Newest first. **User** = Stealthx3's call; **Claude** = proposed by Claude, open to change.
 
 ## 2026-11-13: one test repository for all of Icesuite
 - **User:** convert `icefin-flatpak-test` into an Icesuite-wide test repository for every Icesuite code project,
