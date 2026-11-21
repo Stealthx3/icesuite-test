@@ -2,6 +2,19 @@
 
 Newest first. **User** = Stealthx3's call; **Claude** = proposed by Claude, open to change.
 
+## 2026-11-21: IceTube alpha and beta builds (Jellyfin plugin format)
+- **User:** approved publishing IceTube alpha and beta builds through this repository.
+- **Claude:** a fifth format, `jellyfin`, built like the Windows format: plugin zip and helper bundles as GitHub
+  pre-releases tagged `<slug>-v<version>`, newest 3 per app and channel (older ones deleted with their tags).
+- **Claude:** one manifest per channel (`jellyfin/alpha/manifest.json`, `jellyfin/beta/manifest.json`) for all
+  IceSuite Jellyfin plugins, so users add each repository once. Manifests are plain JSON and unsigned.
+- **Claude:** four-part plugin versions: alpha N → `X.Y.Z.N`, beta N → `X.Y.Z.(100+N)`, so betas outrank alphas of
+  the same version. The tag's pre-release must match the channel.
+- **Claude:** the plugin's GUID is fixed in the catalog and never changes; the plugin image is copied to
+  `jellyfin/images/<slug>.png`.
+- **Claude:** the app repository's CI publishes with a fine-grained token limited to this repository; no signing key.
+- **Claude:** each pre-release carries a source tarball, because the IceTube source repository is private for now.
+
 ## 2026-11-13: one test repository for all of Icesuite
 - **User:** convert `icefin-flatpak-test` into an Icesuite-wide test repository for every Icesuite code project,
   handling Flatpaks, Windows installers, `.deb` packages and Android `.apk` packages.
