@@ -1,0 +1,23 @@
+{
+  "slug": "icetube",
+  "name": "IceTube",
+  "summary": "YouTube subscriptions and search inside Jellyfin",
+  "description": "A YouTube client inside Jellyfin (IceSuite): subscriptions and search, per-video quality choice, play-while-downloading, a time-limited cache, permanent downloads, SponsorBlock and SyncPlay support. Alpha builds: not for daily use.",
+  "license": "GPL-3.0-or-later",
+  "icon": "icons/icetube.svg",
+  "homepage": "https://github.com/Stealthx3/icetube",
+  "categories": ["Multimedia"],
+  "formats": {
+    "jellyfin": {
+      "guid": "e90a41f1-a024-4d75-a12e-e9ba0069c109",
+      "category": "Channels",
+      "target_abi": "198.51.100.152",
+      "image": "icons/icetube-plugin.png",
+      "owner": "Stealthx3"
+    }
+  },
+  "notes": [
+    "In Jellyfin, add the alpha or beta repository (see <a href=\"#setup-jellyfin\">set up</a>), then install IceTube from the plugin catalog.",
+    "The source repository is private for now; every release carries a source tarball (<code>icetube-src_&lt;version&gt;.tar.gz</code>)."
+  ]
+}
