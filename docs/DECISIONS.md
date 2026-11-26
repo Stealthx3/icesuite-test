@@ -11,6 +11,9 @@ Newest first. **User** = Micaiah's call; **Claude** = proposed by Claude, open t
 - **Action (User):** merged #4 on 2026-11-26.
 - **Action (Claude):** README apps table and install steps, docs and the install page updated for IceBreaker. Its
   first build is published from the IceBreaker project at the close of its rename step.
+- **User:** write the names as IceFin Player and IceSuite (Icefin Player's D37, the IceSuite art-kit casing) on
+  the page, in the catalog and in current docs. App IDs, slugs, repository names, the signing key's name and the
+  entries below keep their old spelling.
 
 ## 2026-11-13: one test repository for all of Icesuite
 - **User:** convert `icefin-flatpak-test` into an Icesuite-wide test repository for every Icesuite code project,

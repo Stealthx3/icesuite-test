@@ -94,7 +94,7 @@ refused instead of overwriting their build: `sync --force`, publish again, push.
 Add `--push` to a `publish-…` command to do it in one step.
 
 ## Size budget
-GitHub Pages allows 1 GB per site. Rough sizes today: Icefin Player's Flatpak (app + Locale, depth 3) about 220 MB.
+GitHub Pages allows 1 GB per site. Rough sizes today: IceFin Player's Flatpak (app + Locale, depth 3) about 220 MB.
 IceBreaker bundles its own Java runtime: run `check` after its first publish and record its size here.
 If `check` warns, lower `flatpak.prune_depth` to 1 or 2 first; deltas (`flatpak.static_deltas`) cost space and
 are off.

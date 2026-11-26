@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""icesuite: publish Icesuite test builds to the shared test repository.
+"""icesuite: publish IceSuite test builds to the shared test repository.
 
-One GitHub repository serves four kinds of package for every Icesuite app:
+One GitHub repository serves four kinds of package for every IceSuite app:
 
   Flatpak   a signed OSTree repository        site: flatpak/repo/
   .deb      a signed APT repository           site: apt/
@@ -873,7 +873,7 @@ Run with <code>flatpak run {e(app_id)}</code>; update with <code>flatpak update<
         parts.append("</section>\n")
 
     parts.append('<h2 id="setup">Set up</h2>\n<p>Each platform needs its repository added once. After that, every '
-                 'Icesuite app installs and updates from it.</p>\n')
+                 'IceSuite app installs and updates from it.</p>\n')
     if "flatpak" in have:
         parts.append(f"""<h3 id="setup-flatpak">Flatpak</h3>
 {pre(f'''flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
