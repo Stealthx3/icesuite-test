@@ -1,4 +1,4 @@
-# Adding an Icesuite app
+# Adding an IceSuite app
 
 1. Add `catalog/<slug>.json` (the slug is the file name, lowercase with dashes) and its icon in `icons/`.
 2. Open a pull request on `main`. CI runs the end-to-end test, which loads every catalog file.
@@ -7,7 +7,7 @@
    remotes pick it up; users add nothing new.
 4. Add the app to the **Apps** table in the [README](../README.md).
 
-Apps so far: Icefin Player (`icefin-player`, 2026-11-13) and IceBreaker (`icebreaker`, 2026-11-26).
+Apps so far: IceFin Player (`icefin-player`, 2026-11-13) and IceBreaker (`icebreaker`, 2026-11-26).
 
 ## Catalog file
 ```json

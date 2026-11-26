@@ -1,8 +1,8 @@
-# Icesuite test repository
+# IceSuite test repository
 
 **Install page: <https://stealthx3.github.io/icesuite-test/>**
 
-One repository that serves alpha and test builds of every Icesuite app (today Icefin Player and IceBreaker), in four
+One repository that serves alpha and test builds of every IceSuite app (today IceFin Player and IceBreaker), in four
 formats:
 
 | Format | How users get it | Updates | Where it lives |
@@ -12,10 +12,10 @@ formats:
 | Android `.apk` | an F-Droid repository, once (F-Droid, Droid-ify, Neo Store) | the store app | `fdroid/repo/` on Pages (signed F-Droid index) |
 | Windows `.exe` / `.msi` | download from the install page | reinstall | GitHub pre-releases on this repository, plus `windows/<app>.json` on Pages |
 
-Users only ever add a repository once per platform. A new Icesuite app shows up in the same remotes.
+Users only ever add a repository once per platform. A new IceSuite app shows up in the same remotes.
 
 ## Goals
-- One place to test every Icesuite project (Icefin Player, IceBreaker, IceRom, and whatever comes next), with no new
+- One place to test every IceSuite project (IceFin Player, IceBreaker, IceRom, and whatever comes next), with no new
   repository per app.
 - Real package-manager updates on every platform that has one, so testers stay on the newest build without doing anything.
 - Every repository signed: one OpenPGP key for Flatpak and APT, one keystore for F-Droid.
@@ -28,7 +28,7 @@ Users only ever add a repository once per platform. A new Icesuite app shows up 
 
 ```
 config.json            site URL, repository names, signing key fingerprint, retention
-catalog/<app>.json     one file per Icesuite app: name, links, package IDs per format
+catalog/<app>.json     one file per IceSuite app: name, links, package IDs per format
 icons/                 app icons used on the page and in .flatpakref files
 keys/icesuite-test.gpg the public OpenPGP key (Flatpak + APT)
 tools/icesuite.py      the publisher: sync, publish-flatpak/deb/apk/windows, push
@@ -51,7 +51,7 @@ Full guide: [docs/PUBLISHING.md](docs/PUBLISHING.md). New app: [docs/ADDING-AN-A
 ## Apps
 | App | What it is | Source | Formats in the catalog | Flatpak app ID |
 |---|---|---|---|---|
-| Icefin Player | Themeable, HTPC-first Jellyfin client | [Stealthx3/icefin-player](https://github.com/Stealthx3/icefin-player) | Flatpak, .deb | `io.github.stealthx3.IcefinPlayer` |
+| IceFin Player | Themeable, HTPC-first Jellyfin client | [Stealthx3/icefin-player](https://github.com/Stealthx3/icefin-player) | Flatpak, .deb | `io.github.stealthx3.IcefinPlayer` |
 | IceBreaker | Controller-first game launcher for RomM, a desktop port of Argosy (formerly Argosy Desktop) | [Stealthx3/argosy-desktop](https://github.com/Stealthx3/argosy-desktop) | Flatpak | `io.github.stealthx3.IceBreaker` |
 
 An app is listed on the install page as soon as its catalog file is on `main`; its install steps appear with its
@@ -73,7 +73,7 @@ the old app's data and game library on first start. IceBreaker is an independent
 [Argosy](https://github.com/rommapp/argosy-launcher) and is not affiliated with or endorsed by rommapp.
 
 ## History
-This repository started as `icefin-flatpak-test`, a Flatpak-only remote for Icefin Player. The move to a multi-app,
+This repository started as `icefin-flatpak-test`, a Flatpak-only remote for IceFin Player. The move to a multi-app,
 multi-format repository is described in [docs/MIGRATION.md](docs/MIGRATION.md); decisions are logged in
 [docs/DECISIONS.md](docs/DECISIONS.md). IceBreaker joined on 2026-11-26, the second app in the catalog.
 

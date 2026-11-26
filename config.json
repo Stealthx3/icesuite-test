@@ -1,6 +1,6 @@
 {
-  "name": "Icesuite (test)",
-  "description": "Alpha and test builds of the Icesuite family of apps. Not for daily use.",
+  "name": "IceSuite (test)",
+  "description": "Alpha and test builds of the IceSuite family of apps. Not for daily use.",
   "base_url": "https://stealthx3.github.io/icesuite-test/",
   "github_repo": "Stealthx3/icesuite-test",
   "pages_branch": "gh-pages",
