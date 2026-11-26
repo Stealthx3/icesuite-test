@@ -48,6 +48,8 @@ Build with `flatpak-builder --repo=$HOME/fp-repo …` as usual, then:
 ```bash
 tools/icesuite.py publish-flatpak --app icefin-player --src-repo ~/fp-repo \
   --version 0.1.0-alpha.3 --commit abc1234
+tools/icesuite.py publish-flatpak --app icebreaker --src-repo ~/icebreaker-repo \
+  --version 0.5.0 --commit def5678
 ```
 It copies the app ref and its extensions (`.Locale`; `.Debug` only with `--with-debug`) for every arch and branch in
 the source repo (narrow with `--arch`, `--branch`), signs each commit, and updates the summary and the shared appstream
@@ -93,6 +95,7 @@ Add `--push` to a `publish-…` command to do it in one step.
 
 ## Size budget
 GitHub Pages allows 1 GB per site. Rough sizes today: Icefin Player's Flatpak (app + Locale, depth 3) about 220 MB.
+IceBreaker bundles its own Java runtime: run `check` after its first publish and record its size here.
 If `check` warns, lower `flatpak.prune_depth` to 1 or 2 first; deltas (`flatpak.static_deltas`) cost space and
 are off.
 

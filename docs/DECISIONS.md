@@ -2,6 +2,16 @@
 
 Newest first. **User** = Micaiah's call; **Claude** = proposed by Claude, open to change.
 
+## 2026-11-26: IceBreaker joins the catalog
+- **User:** new Flatpak test builds of IceBreaker (formerly Argosy Desktop, a desktop port of Argosy for RomM) are
+  published here, not on the old `argosy-desktop` Pages repository (decided in the IceBreaker project, 2026-11-21).
+  The user approves, on GitHub, the merge of any pull request that adds an app to the catalog.
+- **Action (Claude):** `catalog/icebreaker.json` (Flatpak only, `io.github.stealthx3.IceBreaker`, needs Flathub) and
+  `icons/icebreaker.svg` (from the IceBreaker brand kit), pull request #4.
+- **Action (User):** merged #4 on 2026-11-26.
+- **Action (Claude):** README apps table and install steps, docs and the install page updated for IceBreaker. Its
+  first build is published from the IceBreaker project at the close of its rename step.
+
 ## 2026-11-13: one test repository for all of Icesuite
 - **User:** convert `icefin-flatpak-test` into an Icesuite-wide test repository for every Icesuite code project,
   handling Flatpaks, Windows installers, `.deb` packages and Android `.apk` packages.

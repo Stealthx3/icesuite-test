@@ -2,7 +2,8 @@
 
 **Install page: <https://stealthx3.github.io/icesuite-test/>**
 
-One repository that serves alpha and test builds of every Icesuite app, in four formats:
+One repository that serves alpha and test builds of every Icesuite app (today Icefin Player and IceBreaker), in four
+formats:
 
 | Format | How users get it | Updates | Where it lives |
 |---|---|---|---|
@@ -14,7 +15,8 @@ One repository that serves alpha and test builds of every Icesuite app, in four 
 Users only ever add a repository once per platform. A new Icesuite app shows up in the same remotes.
 
 ## Goals
-- One place to test every Icesuite project (Icefin Player, IceRom, and whatever comes next), with no new repository per app.
+- One place to test every Icesuite project (Icefin Player, IceBreaker, IceRom, and whatever comes next), with no new
+  repository per app.
 - Real package-manager updates on every platform that has one, so testers stay on the newest build without doing anything.
 - Every repository signed: one OpenPGP key for Flatpak and APT, one keystore for F-Droid.
 - Stay inside GitHub's limits: a 1 GB Pages site, 100 MB per file, and a git history that doesn't grow with every build.
@@ -47,14 +49,33 @@ tools/icesuite.py push
 Full guide: [docs/PUBLISHING.md](docs/PUBLISHING.md). New app: [docs/ADDING-AN-APP.md](docs/ADDING-AN-APP.md).
 
 ## Apps
-| App | Source | Formats in the catalog |
-|---|---|---|
-| Icefin Player | [Stealthx3/icefin-player](https://github.com/Stealthx3/icefin-player) | Flatpak, .deb |
+| App | What it is | Source | Formats in the catalog | Flatpak app ID |
+|---|---|---|---|---|
+| Icefin Player | Themeable, HTPC-first Jellyfin client | [Stealthx3/icefin-player](https://github.com/Stealthx3/icefin-player) | Flatpak, .deb | `io.github.stealthx3.IcefinPlayer` |
+| IceBreaker | Controller-first game launcher for RomM, a desktop port of Argosy (formerly Argosy Desktop) | [Stealthx3/argosy-desktop](https://github.com/Stealthx3/argosy-desktop) | Flatpak | `io.github.stealthx3.IceBreaker` |
+
+An app is listed on the install page as soon as its catalog file is on `main`; its install steps appear with its
+first published build.
+
+### Installing a test build (Flatpak)
+Add the remotes once, then install any app from them:
+```bash
+flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak remote-add --user --if-not-exists icesuite-test https://stealthx3.github.io/icesuite-test/flatpak/icesuite-test.flatpakrepo
+flatpak install --user icesuite-test io.github.stealthx3.IcefinPlayer
+flatpak install --user icesuite-test io.github.stealthx3.IceBreaker
+```
+`flatpak update` keeps them current.
+
+**Coming from Argosy Desktop?** IceBreaker replaces `io.github.stealthx3.ArgosyDesktop`. Testers of the old app are
+moved to IceBreaker by `flatpak update` (an end-of-life rebase on the old Argosy Desktop remote), and IceBreaker moves
+the old app's data and game library on first start. IceBreaker is an independent port of
+[Argosy](https://github.com/rommapp/argosy-launcher) and is not affiliated with or endorsed by rommapp.
 
 ## History
 This repository started as `icefin-flatpak-test`, a Flatpak-only remote for Icefin Player. The move to a multi-app,
 multi-format repository is described in [docs/MIGRATION.md](docs/MIGRATION.md); decisions are logged in
-[docs/DECISIONS.md](docs/DECISIONS.md).
+[docs/DECISIONS.md](docs/DECISIONS.md). IceBreaker joined on 2026-11-26, the second app in the catalog.
 
 Signing key: "Icefin Player test repository", ed25519, fingerprint `532C A3B2 8FBA 72FC 9C9F 369C 1CD5 3BAD 4D48 EB54`
 (kept from the Flatpak-only days so existing installs keep trusting it).

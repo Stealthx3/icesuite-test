@@ -2,8 +2,12 @@
 
 1. Add `catalog/<slug>.json` (the slug is the file name, lowercase with dashes) and its icon in `icons/`.
 2. Open a pull request on `main`. CI runs the end-to-end test, which loads every catalog file.
-3. After merge, publish its first build ([PUBLISHING.md](PUBLISHING.md)). The app appears on the page once it has a
-   build. The existing remotes pick it up; users add nothing new.
+3. After merge, publish its first build ([PUBLISHING.md](PUBLISHING.md)). The page lists the app from the next site
+   build on, marked "No builds published yet"; its install steps and notes appear with the first build. The existing
+   remotes pick it up; users add nothing new.
+4. Add the app to the **Apps** table in the [README](../README.md).
+
+Apps so far: Icefin Player (`icefin-player`, 2026-11-13) and IceBreaker (`icebreaker`, 2026-11-26).
 
 ## Catalog file
 ```json
