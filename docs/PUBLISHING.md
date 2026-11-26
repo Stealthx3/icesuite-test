@@ -80,6 +80,32 @@ Installers can be over Pages' 100 MB file limit, so they go to a GitHub pre-rele
 `<app>-v<version>` (the tool keeps the newest `windows.keep_releases`, 3). The site gets `windows/<app>.json`
 (version, URLs, SHA-256), which an app's own updater can poll. Test installers are not code-signed.
 
+### Jellyfin plugins
+```bash
+tools/icesuite.py publish-jellyfin --app icetube --channel alpha --version 0.1.0-alpha.1 --commit abc1234 \
+  --changelog-file CHANGELOG-0.1.0-alpha.1.md \
+  icetube_0.1.0.1.zip icetube-fetcher_0.1.0-alpha.1_linux-x64.tar.gz icetube-src_0.1.0-alpha.1.tar.gz SHA256SUMS
+```
+Plugins are published to two channels, **alpha** and **beta**, each with its own repository URL
+(`jellyfin/alpha/manifest.json`, `jellyfin/beta/manifest.json` on Pages). One manifest per channel lists every
+IceSuite Jellyfin plugin, so a new plugin needs no new repository. Users add the URL under Dashboard → Plugins →
+Repositories.
+
+- **Files.** Exactly one plugin `.zip`, plus optional helper and source `.tar.gz` bundles and `SHA256SUMS`. They go
+  to a GitHub pre-release on this repository tagged `<app>-v<version>` (for example `icetube-v0.1.0-alpha.1`), as
+  for Windows. The manifest gets the zip's URL and its MD5 (Jellyfin checks MD5).
+- **Version mapping.** `--version` is SemVer and its pre-release tag must match `--channel`. Alpha `N` becomes
+  plugin version `X.Y.Z.N` and beta `N` becomes `X.Y.Z.(100+N)` (N from 1 to 99), so a beta outranks the alphas of
+  the same `X.Y.Z` and the next `X.Y.Z` outranks both.
+- **Retention.** The newest `jellyfin.keep_versions` (3) versions per app and channel stay in the manifest; the
+  older pre-releases are deleted with their tags.
+- **Target ABI.** `--target-abi`, default `formats.jellyfin.target_abi` from the catalog (`12.0.0.0`).
+- **Plugin image.** `formats.jellyfin.image` is copied to `jellyfin/images/<app>.png` and linked as `imageUrl`.
+- **From CI.** The app's own repository runs this from its release workflow: it checks out `main` here with a
+  fine-grained token limited to this repository (Contents: read and write), then runs `sync`,
+  `publish-jellyfin … --push`. Jellyfin manifests are not signed, so no signing key is needed. `--dry-run` skips
+  GitHub and only writes the site files.
+
 ## Check and push
 ```bash
 tools/icesuite.py check      # size budget and everything published

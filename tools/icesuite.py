@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """icesuite: publish Icesuite test builds to the shared test repository.
 
-One GitHub repository serves four kinds of package for every Icesuite app:
+One GitHub repository serves five kinds of package for every Icesuite app:
 
   Flatpak   a signed OSTree repository        site: flatpak/repo/
   .deb      a signed APT repository           site: apt/
   .apk      a signed F-Droid repository       site: fdroid/repo/
   Windows   installers as GitHub Release assets, plus a JSON feed   site: windows/<app>.json
+  Jellyfin  plugin zips as GitHub Release assets, plus a manifest per channel   site: jellyfin/<channel>/manifest.json
 
 The site lives on the Pages branch (gh-pages), which every push replaces with a single commit so the git history
 never grows. This branch (main) holds this tool, config.json, the app catalog (catalog/*.json), icons and the public
@@ -39,7 +40,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 GITHUB_FILE_LIMIT = 100 * 1024 * 1024  # GitHub refuses larger files in a push
-FORMATS = ("flatpak", "deb", "android", "windows")
+FORMATS = ("flatpak", "deb", "android", "windows", "jellyfin")
 
 
 # --------------------------------------------------------------------------------------------------------- helpers
@@ -554,6 +555,130 @@ def cmd_publish_windows(ctx: Ctx, args) -> None:
     maybe_push(ctx, args)
 
 
+# -------------------------------------------------------------------------------------------------------- jellyfin
+
+JELLYFIN_VERSION_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)-(alpha|beta)\.(\d{1,2})$")
+
+
+def jellyfin_plugin_version(version: str, channel: str) -> str:
+    """0.1.0-alpha.N -> 0.1.0.N; 0.1.0-beta.N -> 0.1.0.(100+N). N is 1-99."""
+    m = JELLYFIN_VERSION_RE.match(version)
+    if not m:
+        die(f"--version '{version}' must look like 0.1.0-alpha.1 or 0.1.0-beta.1 (N from 1 to 99)")
+    major, minor, patch, tag, n = m.groups()
+    if tag != channel:
+        die(f"version {version} is a {tag} build but --channel is {channel}")
+    n = int(n)
+    if not 1 <= n <= 99:
+        die(f"--version '{version}': the pre-release number must be 1 to 99")
+    return f"{major}.{minor}.{patch}.{n if tag == 'alpha' else 100 + n}"
+
+
+def version_key(v: str) -> tuple:
+    return tuple(int(x) for x in v.split("."))
+
+
+def md5(path: Path) -> str:
+    h = hashlib.md5()  # Jellyfin manifests specify MD5 checksums
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def tag_of_url(url: str) -> str:
+    return url.split("/download/", 1)[1].split("/", 1)[0] if "/download/" in url else ""
+
+
+def cmd_publish_jellyfin(ctx: Ctx, args) -> None:
+    ctx.require_site()
+    app = ctx.app(args.app, "jellyfin")
+    jf = app["formats"]["jellyfin"]
+    for key in ("guid", "category", "image"):
+        if not jf.get(key):
+            die(f"catalog/{app['slug']}.json: formats.jellyfin.{key} is required")
+    channel = args.channel
+    plugin_version = jellyfin_plugin_version(args.version, channel)
+    target_abi = args.target_abi or jf.get("target_abi")
+    if not target_abi:
+        die("no target ABI: pass --target-abi or set formats.jellyfin.target_abi in the catalog")
+    repo = ctx.cfg["github_repo"]
+    files = [Path(f) for f in args.files]
+    for f in files:
+        if not f.is_file():
+            die(f"{f}: no such file")
+        if not (f.suffix.lower() == ".zip" or f.name.endswith(".tar.gz") or f.name == "SHA256SUMS"):
+            die(f"{f}: expected the plugin .zip, helper or source .tar.gz bundles, or SHA256SUMS")
+        if f.stat().st_size >= 2 * 1024 ** 3:
+            die(f"{f}: GitHub release assets must be under 2 GB")
+    zips = [f for f in files if f.suffix.lower() == ".zip"]
+    if len(zips) != 1:
+        die(f"expected exactly one plugin .zip, got {len(zips)}")
+    plugin_zip = zips[0]
+    changelog = args.notes
+    if args.changelog_file:
+        changelog = Path(args.changelog_file).read_text().strip()
+    changelog = changelog or f"{app['name']} {args.version}"
+    keep = ctx.cfg["jellyfin"].get("keep_versions", 3)
+    tag = f"{app['slug']}-v{safe_tag(args.version)}"
+    title = f"{app['name']} {args.version}" + (f" ({args.commit})" if args.commit else "")
+    notes = args.notes or f"Test build of the {app['name']} Jellyfin plugin ({channel}). Not a release; see {ctx.url()}"
+    base = f"https://github.com/{repo}/releases/download/{tag}/"
+
+    # the manifest: existing versions of this app plus the new one, newest first, newest `keep` only
+    mpath = ctx.site / "jellyfin" / channel / "manifest.json"
+    manifest = read_json(mpath, [])
+    old = next((p for p in manifest if p.get("guid") == jf["guid"]), {})
+    image_name = f"{app['slug']}.png"
+    versions = [v for v in old.get("versions", []) if v["version"] != plugin_version]
+    versions.append({"version": plugin_version, "changelog": changelog, "targetAbi": target_abi,
+                     "sourceUrl": base + plugin_zip.name, "checksum": md5(plugin_zip), "timestamp": now()})
+    versions.sort(key=lambda v: version_key(v["version"]), reverse=True)
+    kept, dropped = versions[:keep], versions[keep:]
+    plugin = {"guid": jf["guid"], "name": app["name"], "description": app["summary"],
+              "overview": app.get("description") or app["summary"], "owner": jf.get("owner", "Stealthx3"),
+              "category": jf["category"], "imageUrl": ctx.url(f"jellyfin/images/{image_name}"), "versions": kept}
+    if old:
+        manifest = [plugin if p.get("guid") == jf["guid"] else p for p in manifest]
+    else:
+        manifest.append(plugin)
+
+    if args.dry_run:
+        info(f"dry run: would create pre-release {tag} on {repo} with {', '.join(f.name for f in files)}")
+    else:
+        need("gh")
+        exists = subprocess.run(["gh", "release", "view", tag, "--repo", repo], capture_output=True).returncode == 0
+        if exists:
+            run(["gh", "release", "upload", tag, *files, "--repo", repo, "--clobber"])
+        else:
+            run(["gh", "release", "create", tag, *files, "--repo", repo, "--prerelease", "--title", title,
+                 "--notes", notes, "--target", ctx.cfg.get("source_branch", "main")])
+        # retention: releases of this app and channel that are no longer in the manifest go, with their tags
+        keep_tags = {tag_of_url(v["sourceUrl"]) for v in kept}
+        marker = f"-{channel}."
+        rels = [r["tagName"] for r in gh_json(["release", "list", "--repo", repo, "--limit", "500",
+                                               "--json", "tagName"])
+                if r["tagName"].startswith(app["slug"] + "-v") and marker in r["tagName"]]
+        for t in sorted(set(rels) - keep_tags):
+            run(["gh", "release", "delete", t, "--repo", repo, "--cleanup-tag", "--yes"])
+    if dropped:
+        info(f"manifest keeps the newest {keep}; dropped {', '.join(v['version'] for v in dropped)}")
+
+    write_json(mpath, manifest)
+    img = ctx.site / "jellyfin" / "images" / image_name
+    img.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(ctx.base / jf["image"], img)
+
+    entry = common_entry(args, args.version)
+    entry.update({"plugin_version": plugin_version, "channel": channel, "tag": tag,
+                  "release_url": f"https://github.com/{repo}/releases/tag/{tag}",
+                  "files": [{"name": f.name, "url": base + f.name, "size": f.stat().st_size, "sha256": sha256(f)}
+                            for f in files]})
+    ctx.record(app["slug"], f"jellyfin-{channel}", entry)
+    build_site(ctx)
+    maybe_push(ctx, args)
+
+
 # ------------------------------------------------------------------------------------------------------------- git
 
 def git(ctx: Ctx, *a, **kw):
@@ -780,6 +905,7 @@ def render_index(ctx: Ctx, builds: dict) -> str:
     key_url = ctx.url(f"keys/{ctx.key_name}")
     fdroid_meta = read_json(ctx.site / "meta" / "fdroid.json", {})
     have = {fmt for b in builds.values() for fmt in b}
+    jf_apps = [a for a in ctx.catalog.values() if "jellyfin" in a["formats"]]
     apps = [a for a in ctx.catalog.values() if builds.get(a["slug"])]
     apps += [a for a in ctx.catalog.values() if not builds.get(a["slug"])]
 
@@ -814,6 +940,8 @@ edges, and report problems in each app's issue tracker. Every build on an app's 
         tags = "".join(f'<span class="tag">{t}</span>' for f, t in
                        (("flatpak", "Flatpak"), ("deb", "Debian / Ubuntu"), ("android", "Android"),
                         ("windows", "Windows")) if f in b)
+        tags += "".join(f'<span class="tag">Jellyfin plugin ({c})</span>' for c in ("alpha", "beta")
+                        if f"jellyfin-{c}" in b)
         parts.append(f"""<section class="app" id="{e(slug)}">
 <header>{icon}<div><h3>{e(app['name'])}</h3><div class="muted">{e(app['summary'])}</div>
 <div>{' · '.join(links)}</div></div></header>
@@ -908,6 +1036,23 @@ sudo apt update''')}
 repository's <a href="https://github.com/%s/releases">Releases page</a>.</p>
 """ % e(cfg["github_repo"]))
 
+    if any(f"jellyfin-{c}" in b for b in builds.values() for c in ("alpha", "beta")):
+        rows = ""
+        for a in jf_apps:
+            b = builds.get(a["slug"], {})
+            cells = "".join(f"<td>{e(b[f'jellyfin-{c}']['plugin_version'])} "
+                            f"<span class=\"muted\">({e(b[f'jellyfin-{c}']['version'])})</span></td>"
+                            if f"jellyfin-{c}" in b else '<td class="muted">none yet</td>' for c in ("alpha", "beta"))
+            rows += f"<tr><td>{e(a['name'])}</td>{cells}</tr>"
+        alpha_url, beta_url = ctx.url("jellyfin/alpha/manifest.json"), ctx.url("jellyfin/beta/manifest.json")
+        parts.append(f"""<h3 id="setup-jellyfin">Jellyfin plugins</h3>
+<p>Jellyfin → Dashboard → Plugins → Repositories → add one of these URLs, then install the plugin from the Catalog:</p>
+{pre(f"Alpha: {alpha_url}" + chr(10) + f"Beta:  {beta_url}")}
+<p class="muted">Alpha builds change often; beta builds are steadier, and a beta always outranks the alphas before
+it. Add both and Jellyfin offers whichever is newest.</p>
+<table><tr><th>Plugin</th><th>Latest alpha</th><th>Latest beta</th></tr>{rows}</table>
+""")
+
     fpr_gpg = public_key_fingerprint(ctx) or cfg["gpg"]["fingerprint"]
     fpr_fmt = " ".join(fpr_gpg[i:i + 4] for i in range(0, len(fpr_gpg), 4))
     parts.append(f"""<h2 id="keys">Signing keys</h2>
@@ -972,6 +1117,15 @@ def main(argv=None) -> None:
     s.add_argument("--version", required=True)
     s.add_argument("--dry-run", action="store_true", help="skip GitHub; only update the site")
     s.add_argument("files", nargs="+")
+
+    s = publish("publish-jellyfin", cmd_publish_jellyfin,
+                "upload a Jellyfin plugin zip (and helper bundles) as a pre-release and update the channel manifest")
+    s.add_argument("--channel", required=True, choices=("alpha", "beta"))
+    s.add_argument("--version", required=True, help="SemVer pre-release, e.g. 0.1.0-alpha.1 or 0.1.0-beta.2")
+    s.add_argument("--changelog-file", help="file with the changelog for this version (overrides --notes there)")
+    s.add_argument("--target-abi", help="Jellyfin ABI (default: formats.jellyfin.target_abi in the catalog)")
+    s.add_argument("--dry-run", action="store_true", help="skip GitHub; only update the site")
+    s.add_argument("files", nargs="+", help="the plugin .zip, optional helper/source .tar.gz bundles, SHA256SUMS")
 
     s = sub.add_parser("fdroid-keygen", help="create the F-Droid repository signing keystore (once)")
     s.add_argument("--dir", default="~/icesuite-fdroid-key")
