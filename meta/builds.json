@@ -1,0 +1,33 @@
+{
+  "icefin-player": {
+    "flatpak": {
+      "version": "0.1.0-alpha.2+qa5",
+      "date": "2026-11-27T09:17:08Z",
+      "commit": "f2fd4626",
+      "app_id": "io.github.stealthx3.IcefinPlayer",
+      "refs": [
+        "app/io.github.stealthx3.IcefinPlayer/x86_64/master",
+        "runtime/io.github.stealthx3.IcefinPlayer.Locale/x86_64/master"
+      ],
+      "arches": [
+        "x86_64"
+      ],
+      "branch": "master"
+    }
+  },
+  "icebreaker": {
+    "flatpak": {
+      "version": "1.0.1",
+      "date": "2026-11-28T15:12:37Z",
+      "commit": "cd3ee54",
+      "app_id": "io.github.stealthx3.icebreaker-client",
+      "refs": [
+        "app/io.github.stealthx3.icebreaker-client/x86_64/master"
+      ],
+      "arches": [
+        "x86_64"
+      ],
+      "branch": "master"
+    }
+  }
+}
