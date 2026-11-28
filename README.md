@@ -52,7 +52,7 @@ Full guide: [docs/PUBLISHING.md](docs/PUBLISHING.md). New app: [docs/ADDING-AN-A
 | App | What it is | Source | Formats in the catalog | Flatpak app ID |
 |---|---|---|---|---|
 | IceFin Player | Themeable, HTPC-first Jellyfin client | [Stealthx3/icefin-player](https://github.com/Stealthx3/icefin-player) | Flatpak, .deb | `io.github.stealthx3.IcefinPlayer` |
-| IceBreaker | Controller-first game launcher for RomM, a desktop port of Argosy (formerly Argosy Desktop) | [Stealthx3/argosy-desktop](https://github.com/Stealthx3/argosy-desktop) | Flatpak | `io.github.stealthx3.IceBreaker` |
+| IceBreaker | Controller-first game launcher for RomM, a desktop port of Argosy (formerly Argosy Desktop) | [Stealthx3/icebreaker-client](https://github.com/Stealthx3/icebreaker-client) | Flatpak | `io.github.stealthx3.IceBreaker` |
 
 An app is listed on the install page as soon as its catalog file is on `main`; its install steps appear with its
 first published build.
@@ -63,7 +63,7 @@ Add the remotes once, then install any app from them:
 flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak remote-add --user --if-not-exists icesuite-test https://stealthx3.github.io/icesuite-test/flatpak/icesuite-test.flatpakrepo
 flatpak install --user icesuite-test io.github.stealthx3.IcefinPlayer
-flatpak install --user icesuite-test io.github.stealthx3.IceBreaker
+flatpak install --user icesuite-test io.github.stealthx3.icebreaker-client
 ```
 `flatpak update` keeps them current.
 
